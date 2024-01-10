@@ -5,4 +5,5 @@ export interface IUser{
     password: string;
     role: 'ADMIN' | 'WELFARE' | 'USER';
     user_id: string;
+    isVerified: boolean;
 }
