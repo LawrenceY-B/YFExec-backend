@@ -32,18 +32,16 @@ export const sendSMS = async (phone: string, text: string) => {
       messagingServiceSid: `${MessageSID}`,
       to: `${phone}`,
     })
-    .then((message) => console.log(message.status))
+    .then((message) => console.info(message.status))
     .catch((error) => console.error(error));
 };
 
 
-export const sendMail = async (email: string, otp: string, name: string):Promise<void> => {
+export const sendMail = async (email: string, token: string, userid:string, name: string):Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
       const user = process.env.EMAIL as string
       const pass = process.env.PASSWORD as string
-      console.log("UserMail: " + user)
-      console.log("Pass: " + pass)
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -75,16 +73,16 @@ export const sendMail = async (email: string, otp: string, name: string):Promise
         template: 'email',
         context: {
           name,
-          otp,
+          token,
+          userid
         },
       };
 
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          console.log(error);
           reject(error);
         } else {
-          console.log('Email sent:', info.response);
+          console.info('Email sent:', info.response);
           resolve();
         }
       });
@@ -94,6 +92,22 @@ export const sendMail = async (email: string, otp: string, name: string):Promise
   })
  
 };
+
+export const generateToken = () :Promise<string> => {
+  return new Promise((resolve, reject) => {
+    try {
+  
+
+     
+
+      const token =  crypto.randomUUID();
+
+      resolve(token);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
 
 
 export const ValidateSignUp = (person: IUser) => {

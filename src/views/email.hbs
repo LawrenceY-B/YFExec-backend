@@ -1,45 +1,14 @@
-<!DOCTYPE html>
 <html lang="en">
   <style>
-    @import url("http://fonts.cdnfonts.com/css/bentonsans-regular");
+    @import url("http://fonts.cdnfonts.com/css/bentonsans-regular"); * {
+    font-family: "BentonSans Regular", serif; } body { font-family: sans-serif;
+    background-color: #fafafa; box-sizing: border-box; margin: 0; padding: 0;
+    position: relative; cursor: default; } .main { width: 550px; background:
+    #ffffff 0 0 no-repeat padding-box; margin: auto; } .text { color: #5c6c80;
+    font-size: 16px; font-style: normal; font-weight: 400; margin: 4px; }
+    .banner { width: 100%; } .footerText{ color: #7b809a; font-family: Inter;
+    font-size: 15px; font-style: normal; font-weight: 500; margin: 0px; }
 
-    * {
-      font-family: "BentonSans Regular", serif;
-    }
-
-    body {
-      font-family: sans-serif;
-      background-color: #fafafa;
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      position: relative;
-      
-    }
-    .main {
-      width: 550px;
-      background: #ffffff 0 0 no-repeat padding-box;
-      margin: auto;
-    }
-    .text {
-      color: #5c6c80;
-      font-size: 16px;
-      font-style: normal;
-      font-weight: 400;
-      margin: 4px;
-    }
-    .banner {
-      width: 100%;
-    }
-    .footerText{
-      color:  #7b809a;
-      font-family: Inter;
-      font-size: 15px;
-      font-style: normal;
-      font-weight: 500;
-      margin: 0x;
-    }
-   
   </style>
   <head>
     <meta charset="UTF-8" />
@@ -48,67 +17,93 @@
   </head>
   <body>
     <table align="center" class="main">
-        <tr>
-          <td style="padding: 30px;">
-            <table align="center" style="width: 100%">
-              <tr> 
-                <img style="width: 100%;
+      <tr>
+        <td style="padding: 30px;">
+          <table align="center" style="width: 100%">
+            <tr>
+              <img
+                style="width: 100%;
                 object-fit: cover;
-                object-position: center;" src="https://lawrencestrialbucket.s3.amazonaws.com/banner.png" alt=" banner">
-              </tr>
-            </table>
-            <table style="margin: 20px 0px">
-              <tr>
-                <td>
-                  <h3 style="color: #1a314d; margin: 0px; font-size: 18px">
-                    Hello {{name}},
-                  </h3>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <p
-                    style="
+                object-position: center;"
+                src="https://lawrencestrialbucket.s3.amazonaws.com/banner.png"
+                alt=" banner"
+              />
+            </tr>
+          </table>
+          <table align="center" style="margin: 20px 0px">
+            <tr>
+              <td>
+                <h3 style="color: #1a314d; margin: 0px; font-size: 18px">
+                  Hello
+                  {{name}},
+                </h3>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <p
+                  style="
                       color: #5c6c80;
                       margin-top: 10px;
+                      font-weight: 500;
                       font-size: 16px;
-                      font-weight: 100;
+                      text-align: center;
                     "
+                >
+                  Welcome to The LIC YOUTH EXEC PORTAL🍾! Your security is our
+                  top priority. To ensure a safe environment, we need you to
+                  verify your account. It's a quick step – just hit the button
+                  below:
+                </p>
+                <p class="footerText" style="text-align: center;">🔐 Verify My
+                  Account</p>
+              </td>
+            </tr>
+
+          </table>
+          <table align="center">
+            <tr>
+              <td align="center">
+                <a
+                  href="http://localhost:8080/api/auth/verify?token={{token}}&userid={{userid}}"
+                >
+                  <button
+                    style="border-radius: 8px; padding: 10px 16px; border: none; color: #ffffff; background-color: #7638ff; cursor: pointer;"
                   >
-                    Kindly verify your email address to complete your account setup.
-                  </p>
-                  <p class="footerText">Use the One Time Password (OTP) below to complete the verification process</p>
-                </td>
-              </tr>
-            </table>
-  
-            <hr />
-           <table align="center">
-                <tr>
-                <td>
-                    <h3 style="color: #1a314d; margin: 0px; font-size: 24px; letter-spacing: 10px;">
-                    {{otp}}
-                    </h3>
-                </td>
-                </tr>
-           </table>
-            <hr />
-            <table style="width: 100%">
-              <tr>
-                <td>
-                  <p class="text">Kind regards,</p>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <p class="text">Youth Executives</p>
-                </td>
-              </tr>
-            </table>
-            <br /><br /><br />
-          </td>
-        </tr>
-      
-      </table>
+                    VERIFY ACCOUNT
+                  </button>
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <p
+                  class="footerText"
+                  style="text-align: center; margin: 5px 0px;"
+                >Can't click the button above? Copy and paste this link into
+                  your browser:
+                  <a
+                    href="http://localhost:8080/api/auth/verify?token={{token}}&userid={{userid}}"
+                    style="font-size: 12px;"
+                  >http://localhost:8080/api/auth/verify?token={{token}}&userid={{userid}}</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+          <hr />
+          <table style="width: 100%">
+            <tr>
+              <td>
+                <p class="text">Kind regards,</p>
+                <p class="text">Youth Executives</p>
+
+              </td>
+            </tr>
+          </table>
+          <br /><br /><br />
+        </td>
+      </tr>
+
+    </table>
   </body>
 </html>

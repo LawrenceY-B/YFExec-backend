@@ -6,4 +6,5 @@ export interface IUser{
     role: 'ADMIN' | 'WELFARE' | 'USER';
     user_id: string;
     isVerified: boolean;
+    verificationToken: string;
 }

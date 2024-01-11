@@ -9,7 +9,8 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, required: true },
     role: { type: String, required: true },
     user_id: { type: String, required: true },
-    isVerified: { type: Boolean, default: false}
+    isVerified: { type: Boolean, default: false},
+    verificationToken: { type: String, required: true },
   },
   { timestamps: true }
 );
