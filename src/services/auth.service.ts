@@ -1,6 +1,8 @@
 import Joi from "joi";
 import { IUser } from "../interfaces/IUser";
 import { Twilio } from "twilio";
+import nodemailer from 'nodemailer';
+import hbs, { NodemailerExpressHandlebarsOptions } from 'nodemailer-express-handlebars';
 
 export const generateOTP = (): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -33,6 +35,67 @@ export const sendSMS = async (phone: string, text: string) => {
     .then((message) => console.log(message.status))
     .catch((error) => console.error(error));
 };
+
+
+export const sendMail = async (email: string, otp: string, name: string):Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const user = process.env.EMAIL as string
+      const pass = process.env.PASSWORD as string
+      console.log("UserMail: " + user)
+      console.log("Pass: " + pass)
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: `${user}`,
+          pass: `${pass}`,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      const handlebarOptions: NodemailerExpressHandlebarsOptions = {
+        viewEngine: {
+          extname: '.hbs',
+          partialsDir: './src/views/',
+          layoutsDir: './src/views/',
+          defaultLayout: 'email.hbs',
+        },
+        viewPath: './src/views/',
+        extName: '.hbs',
+      };
+
+      transporter.use('compile', hbs(handlebarOptions));
+
+      const mailOptions = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: 'User Verification',
+        template: 'email',
+        context: {
+          name,
+          otp,
+        },
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else {
+          console.log('Email sent:', info.response);
+          resolve();
+        }
+      });
+    } catch (error) {
+      reject(error);
+    }
+  })
+ 
+};
+
+
 export const ValidateSignUp = (person: IUser) => {
   const schema = Joi.object({
     name: Joi.string().min(3).max(30).required(),

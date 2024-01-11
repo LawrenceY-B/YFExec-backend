@@ -4,7 +4,12 @@ import bcrypt from "bcrypt";
 import { IUser } from "../../interfaces/IUser";
 import UserData from "../../models/user.model";
 import { v4 as uuidv4, validate } from "uuid";
-import { ValidateSignUp, generateOTP, sendSMS } from "../../services/auth.service";
+import {
+  ValidateSignUp,
+  generateOTP,
+  sendSMS,
+  sendMail,
+} from "../../services/auth.service";
 
 export const register = async (
   req: Request,
@@ -31,7 +36,7 @@ export const register = async (
       return res
         .status(403)
         .json({ success: false, message: "Phone already in use" });
-    
+
     const user: IUser = {
       name: name,
       email: email,
@@ -47,9 +52,10 @@ export const register = async (
     if (!saveUser)
       res.status(400).json({ success: false, message: "user not saved" });
     const otp = await generateOTP();
-    const text = `Your verification code is ${otp}.\n\nThis password will expire in 5 minutes.\n\n`;
+    // const text = `Your verification code is ${otp}.\n\nThis password will expire in 5 minutes.\n\n`;
 
-    sendSMS(phonenumber, text);
+    // sendSMS(phonenumber, text);
+    sendMail(email, otp, name);
     res.status(200).json({ success: true, message: "user saved" });
   } catch (error) {
     next(error);
