@@ -97,6 +97,52 @@ export const sendMail = async (
     }
   });
 };
+export const sendMailOTP = async (email: string, otp: string, name:string) => {
+  const user = process.env.EMAIL as string;
+  const pass = process.env.PASSWORD as string;
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: `${user}`,
+      pass: `${pass}`,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  const handlebarOptions: NodemailerExpressHandlebarsOptions = {
+    viewEngine: {
+      extname: ".hbs",
+      partialsDir: "./src/views/",
+      layoutsDir: "./src/views/",
+      defaultLayout: "otp.hbs",
+    },
+    viewPath: "./src/views/",
+    extName: ".hbs",
+  };
+
+  transporter.use("compile", hbs(handlebarOptions));
+
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: "User Verification",
+    template: "otp",
+    context: {
+      name,
+      otp,
+    },
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error(error);
+    } else {
+      console.info("Email sent:", info.response);
+    }
+  });
+}
 
 export const generateToken = (): Promise<string> => {
   return new Promise((resolve, reject) => {

@@ -10,6 +10,7 @@ import {
   sendSMS,
   sendMail,
   generateToken,
+  sendMailOTP,
 } from "../../services/auth.service";
 import OTPData from "../../models/otp.model";
 
@@ -217,6 +218,36 @@ export const signinwithPhone = async (
     next(error);
   }
 };
+export const signinwithEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+
+    const user = await UserData.findOne({ email: email });
+    if (!user)
+      return res
+        .status(400)
+        .json({ success: false, message: "Phone number does not exist" });
+
+    const otp = await generateOTP();
+    const hashedOTP = await bcrypt.hash(otp, 12);
+
+    const newOTP = new OTPData({
+      user_id: user.user_id,
+      otp: hashedOTP,
+    });
+    const saveOTP = await newOTP.save();
+    if (!saveOTP)
+      res.status(400).json({ success: false, message: "OTP not saved" });
+    sendMailOTP(email, otp, user.name);
+    res.status(200).json({ success: true, message: "OTP sent" });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getALLUsers = async (
   req: Request,
@@ -224,9 +255,7 @@ export const getALLUsers = async (
   next: NextFunction
 ) => {
   try {
-    const users = await UserData.find().select(
-      "name email phone user_id"
-    );
+    const users = await UserData.find().select("name email phone user_id");
     if (!users)
       return res
         .status(400)
@@ -239,7 +268,11 @@ export const getALLUsers = async (
   }
 };
 
-export const verifyOTP = async (req:Request, res:Response, next:NextFunction) => {
+export const verifyOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const secret = process.env.JWT_SECRET as string;
     const { userid, otp } = req.body;
@@ -249,32 +282,32 @@ export const verifyOTP = async (req:Request, res:Response, next:NextFunction) =>
         .json({ success: false, message: "Missing details ‼️" });
     const findOTP = await OTPData.findOne({ user_id: userid });
     if (!findOTP)
-      return res
-        .status(400)
-        .json({ success: false, message: "OTP Expired" });
+      return res.status(400).json({ success: false, message: "OTP Expired" });
     const validOTP = await bcrypt.compare(otp, findOTP.otp);
     if (!validOTP)
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid OTP" });
-   
-    const user = await UserData.findOne({ user_id: userid }); 
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+
+    const user = await UserData.findOne({ user_id: userid });
     if (!user)
       return res
         .status(400)
-        .json({ success: false, message: "User Does Not Exist" });   
-    const token = jwt.sign({
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-    }, `${secret}`, { expiresIn: '12h' });
-    
-    return res.status(200).json({ success: true, message: "OTP Verified", data: token });
+        .json({ success: false, message: "User Does Not Exist" });
+    const token = jwt.sign(
+      {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+      `${secret}`,
+      { expiresIn: "12h",
+      algorithm: 'HS512'}
+    );
 
-    
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP Verified", data: token });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
-
+};
