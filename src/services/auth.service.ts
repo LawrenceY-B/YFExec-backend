@@ -1,8 +1,10 @@
 import Joi from "joi";
 import { IUser } from "../interfaces/IUser";
 import { Twilio } from "twilio";
-import nodemailer from 'nodemailer';
-import hbs, { NodemailerExpressHandlebarsOptions } from 'nodemailer-express-handlebars';
+import nodemailer from "nodemailer";
+import hbs, {
+  NodemailerExpressHandlebarsOptions,
+} from "nodemailer-express-handlebars";
 
 export const generateOTP = (): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -36,14 +38,18 @@ export const sendSMS = async (phone: string, text: string) => {
     .catch((error) => console.error(error));
 };
 
-
-export const sendMail = async (email: string, token: string, userid:string, name: string):Promise<void> => {
+export const sendMail = async (
+  email: string,
+  token: string,
+  userid: string,
+  name: string
+): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
-      const user = process.env.EMAIL as string
-      const pass = process.env.PASSWORD as string
+      const user = process.env.EMAIL as string;
+      const pass = process.env.PASSWORD as string;
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        service: "gmail",
         auth: {
           user: `${user}`,
           pass: `${pass}`,
@@ -55,26 +61,26 @@ export const sendMail = async (email: string, token: string, userid:string, name
 
       const handlebarOptions: NodemailerExpressHandlebarsOptions = {
         viewEngine: {
-          extname: '.hbs',
-          partialsDir: './src/views/',
-          layoutsDir: './src/views/',
-          defaultLayout: 'email.hbs',
+          extname: ".hbs",
+          partialsDir: "./src/views/",
+          layoutsDir: "./src/views/",
+          defaultLayout: "email.hbs",
         },
-        viewPath: './src/views/',
-        extName: '.hbs',
+        viewPath: "./src/views/",
+        extName: ".hbs",
       };
 
-      transporter.use('compile', hbs(handlebarOptions));
+      transporter.use("compile", hbs(handlebarOptions));
 
       const mailOptions = {
         from: process.env.EMAIL,
         to: email,
-        subject: 'User Verification',
-        template: 'email',
+        subject: "User Verification",
+        template: "email",
         context: {
           name,
           token,
-          userid
+          userid,
         },
       };
 
@@ -82,33 +88,26 @@ export const sendMail = async (email: string, token: string, userid:string, name
         if (error) {
           reject(error);
         } else {
-          console.info('Email sent:', info.response);
+          console.info("Email sent:", info.response);
           resolve();
         }
       });
     } catch (error) {
       reject(error);
     }
-  })
- 
+  });
 };
 
-export const generateToken = () :Promise<string> => {
+export const generateToken = (): Promise<string> => {
   return new Promise((resolve, reject) => {
     try {
-  
-
-     
-
-      const token =  crypto.randomUUID();
-
+      const token = crypto.randomUUID();
       resolve(token);
     } catch (error) {
       reject(error);
     }
   });
-}
-
+};
 
 export const ValidateSignUp = (person: IUser) => {
   const schema = Joi.object({
@@ -117,7 +116,6 @@ export const ValidateSignUp = (person: IUser) => {
       .pattern(new RegExp("^(?:\\+233\\d{9}|0\\d{9})$"))
       .required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).max(50).required(),
     role: Joi.string().valid("ADMIN", "WELFARE", "USER").required(),
   });
   return schema.validate(person);
