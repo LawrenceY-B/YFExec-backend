@@ -115,43 +115,43 @@ export const verify = async (
   }
 };
 
-// export const login = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     const { email, password, phone } = req.body;
-//     let phonenumber = phone as string;
-//     if (phonenumber.startsWith("0")) {
-//       phonenumber = phonenumber.replace("0", "+233");
-//     }
-//     const user = await UserData.findOne({
-//       $or: [{ email: email }, { phone: phonenumber }],
-//     });
-//     if (!user)
-//       return res.status(400).json({ success: false, message: "Invalid User" });
-//     const validPassword = await bcrypt.compare(password, user.password);
-//     if (!validPassword)
-//       return res.status(400).json({ success: false, message: "Invalid User" });
-//     if (!user.isVerified)
-//       return res.status(400).json({ success: false, message: "User not verified" });
-//     const token = generateToken();
-//     const refreshToken = generateToken();
-//     const update = {
-//       token: await token,
-//       refreshToken: await refreshToken,
-//     };
-//     const login = await UserData.findOneAndUpdate({ _id: user._id }, update, {
-//       new: true,
-//     });
-//     if (!login)
-//       return res.status(400).json({ success: false, message: "Invalid User" });
-//     res.status(200).json({ success: true, message: "user logged in", data:login });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+    
+    const user = await UserData.findOne({email: email  });
+    if (!user)
+      return res.status(400).json({ success: false, message: "User does not exist" });
+    const validPassword = await bcrypt.compare(password, user.password as string);
+    if (!validPassword)
+      return res.status(400).json({ success: false, message: "Wrong Password" });
+    if (!user.isVerified)
+      return res.status(400).json({ success: false, message: "User not verified" });
+
+    const secret = process.env.JWTSECRETKEY as string;
+    const token = jwt.sign(
+      {
+        mongoID: user._id,
+        userId: user.user_id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      },
+      `${secret}`,
+      { expiresIn: "12h",
+      algorithm: 'HS512'}
+    );
+  
+    res.status(200).json({ success: true, message: "user logged in", data:token });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const resetPassword = async (
   req: Request,
