@@ -4,6 +4,7 @@ import "dotenv/config";
 import { DB_Connection } from "./database/db";
 import ErrorHandler from "./middlewares/ErrorHandler";
 import AuthRoutes from "./routes/auth.routes";
+import UserRoutes from "./routes/user.routes";
 
 const port = process.env.PORT;
 const app = express();
@@ -21,10 +22,12 @@ app
     );
     next();
   })
-  .use("/api/auth", AuthRoutes);
+  .use("/api/members", UserRoutes)
+  .use("/api/v1/admin/auth", AuthRoutes)
 
 app.all("*", (req, res) => {
-  res.status(404).json({ message: "Page Not Found" });
+  const userUrl=req.url
+  res.status(404).json({ message: "Page Not Found", url: userUrl});
 });
 app.use(ErrorHandler);
 

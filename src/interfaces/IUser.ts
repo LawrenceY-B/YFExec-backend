@@ -3,7 +3,7 @@ export interface IUser{
     phone: string;
     email: string;
     password: string | null;
-    role: 'ADMIN' | 'WELFARE' | 'USER';
+    role: 'EXEC' | 'WELFARE' | 'USER';
     user_id: string;
     isVerified: boolean;
     verificationToken: string;

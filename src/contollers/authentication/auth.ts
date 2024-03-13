@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { IUser } from "../../interfaces/IUser";
 import UserData from "../../models/user.model";
-import { v4 as uuidv4, validate } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import {
   ValidateSignUp,
   generateOTP,
@@ -122,15 +122,24 @@ export const login = async (
 ) => {
   try {
     const { email, password } = req.body;
-    
-    const user = await UserData.findOne({email: email  });
+
+    const user = await UserData.findOne({ email: email });
     if (!user)
-      return res.status(400).json({ success: false, message: "User does not exist" });
-    const validPassword = await bcrypt.compare(password, user.password as string);
+      return res
+        .status(400)
+        .json({ success: false, message: "User does not exist" });
+    const validPassword = await bcrypt.compare(
+      password,
+      user.password as string
+    );
     if (!validPassword)
-      return res.status(400).json({ success: false, message: "Wrong Password" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Wrong Password" });
     if (!user.isVerified)
-      return res.status(400).json({ success: false, message: "User not verified" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User not verified" });
 
     const secret = process.env.JWTSECRETKEY as string;
     const token = jwt.sign(
@@ -143,11 +152,12 @@ export const login = async (
         role: user.role,
       },
       `${secret}`,
-      { expiresIn: "12h",
-      algorithm: 'HS512'}
+      { expiresIn: "12h", algorithm: "HS512" }
     );
-  
-    res.status(200).json({ success: true, message: "user logged in", data:token });
+
+    res
+      .status(200)
+      .json({ success: true, message: "user logged in", data: token });
   } catch (error) {
     next(error);
   }
@@ -286,12 +296,15 @@ export const verifyOTP = async (
     const validOTP = await bcrypt.compare(otp, findOTP.otp);
     if (!validOTP)
       return res.status(400).json({ success: false, message: "Invalid OTP" });
-
     const user = await UserData.findOne({ user_id: userid });
     if (!user)
       return res
         .status(400)
         .json({ success: false, message: "User Does Not Exist" });
+    const clearOTP = await OTPData.findOneAndDelete({ user_id: userid });
+    if(!clearOTP){
+      return res.status(400).json({success:false, message:"Something went wrong"})
+    }
     const token = jwt.sign(
       {
         name: user.name,
@@ -300,13 +313,12 @@ export const verifyOTP = async (
         role: user.role,
       },
       `${secret}`,
-      { expiresIn: "12h",
-      algorithm: 'HS512'}
+      { expiresIn: "12h", algorithm: "HS512" }
     );
 
     return res
       .status(200)
-      .json({ success: true, message: "OTP Verified", data: token });
+      .json({ success: true, message: "OTP Verified", token: token });
   } catch (error) {
     next(error);
   }
