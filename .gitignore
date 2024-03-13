@@ -3,6 +3,6 @@
 .env.test.local
 .env.production.local
 .env.local
-
+.prettierignore 
 node_modules/
 trial/

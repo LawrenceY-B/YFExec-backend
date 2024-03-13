@@ -17,7 +17,7 @@ import OTPData from "../../models/otp.model";
 export const register = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { error } = ValidateSignUp(req.body);
@@ -68,7 +68,7 @@ export const register = async (
 export const verify = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { token, userid } = req.query;
@@ -95,7 +95,7 @@ export const verify = async (
         verificationToken: token,
       },
       update,
-      { new: true }
+      { new: true },
     );
     if (!verification)
       return res
@@ -118,7 +118,7 @@ export const verify = async (
 export const login = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { email, password } = req.body;
@@ -130,7 +130,7 @@ export const login = async (
         .json({ success: false, message: "User does not exist" });
     const validPassword = await bcrypt.compare(
       password,
-      user.password as string
+      user.password as string,
     );
     if (!validPassword)
       return res
@@ -152,7 +152,7 @@ export const login = async (
         role: user.role,
       },
       `${secret}`,
-      { expiresIn: "12h", algorithm: "HS512" }
+      { expiresIn: "12h", algorithm: "HS512" },
     );
 
     res
@@ -166,7 +166,7 @@ export const login = async (
 export const resetPassword = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { userid, password } = req.body;
@@ -196,7 +196,7 @@ export const resetPassword = async (
 export const signinwithPhone = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { phone } = req.body;
@@ -231,7 +231,7 @@ export const signinwithPhone = async (
 export const signinwithEmail = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { email } = req.body;
@@ -262,7 +262,7 @@ export const signinwithEmail = async (
 export const getALLUsers = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const users = await UserData.find().select("name email phone user_id");
@@ -281,7 +281,7 @@ export const getALLUsers = async (
 export const verifyOTP = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const secret = process.env.JWT_SECRET as string;
@@ -302,8 +302,10 @@ export const verifyOTP = async (
         .status(400)
         .json({ success: false, message: "User Does Not Exist" });
     const clearOTP = await OTPData.findOneAndDelete({ user_id: userid });
-    if(!clearOTP){
-      return res.status(400).json({success:false, message:"Something went wrong"})
+    if (!clearOTP) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Something went wrong" });
     }
     const token = jwt.sign(
       {
@@ -313,7 +315,7 @@ export const verifyOTP = async (
         role: user.role,
       },
       `${secret}`,
-      { expiresIn: "12h", algorithm: "HS512" }
+      { expiresIn: "12h", algorithm: "HS512" },
     );
 
     return res

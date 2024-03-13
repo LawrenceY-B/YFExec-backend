@@ -21,7 +21,7 @@ declare module "express-serve-static-core" {
 export const verifyToken = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const Authorization = req.get("Authorization");
   if (!Authorization || !Authorization.startsWith("Bearer ")) {

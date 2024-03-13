@@ -20,6 +20,7 @@
     "@types/nodemailer": "^6.4.14",
     "@types/nodemailer-express-handlebars": "^4.0.5",
     "@types/uuid": "^9.0.7",
+    "prettier": "3.2.5",
     "typescript": "^5.3.3"
   },
   "dependencies": {

@@ -42,7 +42,7 @@ export const sendMail = async (
   email: string,
   token: string,
   userid: string,
-  name: string
+  name: string,
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
@@ -97,7 +97,7 @@ export const sendMail = async (
     }
   });
 };
-export const sendMailOTP = async (email: string, otp: string, name:string) => {
+export const sendMailOTP = async (email: string, otp: string, name: string) => {
   const user = process.env.EMAIL as string;
   const pass = process.env.PASSWORD as string;
   const transporter = nodemailer.createTransport({
@@ -142,7 +142,7 @@ export const sendMailOTP = async (email: string, otp: string, name:string) => {
       console.info("Email sent:", info.response);
     }
   });
-}
+};
 
 export const generateToken = (): Promise<string> => {
   return new Promise((resolve, reject) => {

@@ -18,16 +18,16 @@ app
     res.setHeader("Content-Type", "application/json");
     res.setHeader(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
+      "Content-Type, Authorization",
     );
     next();
   })
   .use("/api/members", UserRoutes)
-  .use("/api/v1/admin/auth", AuthRoutes)
+  .use("/api/v1/admin/auth", AuthRoutes);
 
 app.all("*", (req, res) => {
-  const userUrl=req.url
-  res.status(404).json({ message: "Page Not Found", url: userUrl});
+  const userUrl = req.url;
+  res.status(404).json({ message: "Page Not Found", url: userUrl });
 });
 app.use(ErrorHandler);
 
