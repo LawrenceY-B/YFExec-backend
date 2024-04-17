@@ -3,7 +3,7 @@ import { IYouthMember } from "../interfaces/youthMember";
 
 const members = new Schema<IYouthMember>({
   Firstname: { type: String, required: true },
-  Othername: { type: String, required: true },
+  Othername: { type: String },
   Lastname: { type: String, required: true },
   Email: { type: String, required: true },
   Phonenumber: { type: String, required: true },

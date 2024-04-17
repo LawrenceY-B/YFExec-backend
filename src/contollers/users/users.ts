@@ -9,9 +9,12 @@
 */
 
 import { Request, Response, NextFunction } from "express";
+import csv from "csvtojson"
+import moment from "moment";
 import { validateYouthMember } from "../../services/user.service";
 import MemberData from "../../models/member.model";
 import { IYouthMember } from "../../interfaces/youthMember";
+import fs from "fs"
 
 export const addMember = async (
   req: Request,
@@ -27,7 +30,7 @@ export const addMember = async (
     }
     const {
       Firstname,
-        Othername,
+      Othername,
       Lastname,
       Email,
       Phonenumber,
@@ -35,9 +38,9 @@ export const addMember = async (
       Gender,
       Residence,
       BibleStudyCareCell,
-        EmergencyContactName,
-        EmergencyContact,
-        EmergencyContactRelationship,
+      EmergencyContactName,
+      EmergencyContact,
+      EmergencyContactRelationship,
     } = req.body;
     console.log(req.body);
 
@@ -59,15 +62,15 @@ export const addMember = async (
       group = "None";
     }
     if (!EmergencyContactName || !EmergencyContact || !EmergencyContactRelationship) {
-        return res.status(400).json({
-            success: false,
-            message: "Emergency contact details are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Emergency contact details are required",
+      });
     }
 
     const data: IYouthMember = {
       Firstname,
-        Othername,
+      Othername,
       Lastname,
       Email,
       Phonenumber,
@@ -75,9 +78,9 @@ export const addMember = async (
       Gender,
       Residence,
       BibleStudyCareCell: group,
-        EmergencyContactName,
-        EmergencyContact,
-        EmergencyContactRelationship,
+      EmergencyContactName,
+      EmergencyContact,
+      EmergencyContactRelationship,
 
     };
     const newMember = new MemberData(data);
@@ -105,7 +108,7 @@ export const editMembers = async (
     console.log(req.params.id);
     const {
       Firstname,
-        Othername,
+      Othername,
       Lastname,
       Email,
       Phonenumber,
@@ -113,10 +116,10 @@ export const editMembers = async (
       Gender,
       Residence,
       BibleStudyCareCell,
-        EmergencyContactName,
-        EmergencyContact,
-        EmergencyContactRelationship,
-    }:IYouthMember = req.body;
+      EmergencyContactName,
+      EmergencyContact,
+      EmergencyContactRelationship,
+    }: IYouthMember = req.body;
 
     const member = await MemberData.findOne({ _id: id });
     if (!member) {
@@ -126,7 +129,7 @@ export const editMembers = async (
     }
     const update = {
       Firstname,
-        Othername,
+      Othername,
       Lastname,
       Email,
       Phonenumber,
@@ -134,9 +137,9 @@ export const editMembers = async (
       Gender,
       Residence,
       BibleStudyCareCell,
-        EmergencyContactName,
-        EmergencyContact,
-        EmergencyContactRelationship,
+      EmergencyContactName,
+      EmergencyContact,
+      EmergencyContactRelationship,
     };
 
     const updatedMember = await MemberData.findOneAndUpdate(
@@ -159,13 +162,9 @@ export const editMembers = async (
   }
 };
 
-export const removeDuplicates = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const removeDuplicates = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const duplicates = await MemberData.aggregate(
+    const duplicate = await MemberData.aggregate(
       [
         {
           $group: {
@@ -188,33 +187,98 @@ export const removeDuplicates = async (
       ],
       { allowDiskUse: true },
     ).exec();
-    if (duplicates.length > 0) {
-      duplicates.map(async (doc) => {
+    if (duplicate.length > 0) {
+      duplicate.forEach(async (doc) => {
         await MemberData.deleteMany({ _id: { $in: doc.dups } });
         return res
           .status(200)
-          .json({ success: true, message: "Duplicates removed" });
+          .json({ success: true, message: "Duplicate removed" });
       });
-    }else{
-      return res.status(200).json({success:true, message:"No duplicates found"})
     }
+    return res
+      .status(200)
+      .json({ success: true, message: "No duplicate found" });
 
   } catch (error) {
-    {
-      next(error);
-    }
-  }
-};
-
-export const uploadExcel = async (req:Request, res:Response, next:NextFunction) => {
-  try{
-    const file = req.file
-    if(!file){
-      return res.status(400).json({success:false, message:"No file uploaded"})
-    }
-
-
-  }catch (error) {
     next(error)
   }
 }
+
+export const uploadExcel = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const file = req.file
+    if (!file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" })
+    }
+    const jsonArray = await csv().fromString(file.buffer.toString())
+    let MemberData: IYouthMember[] = []
+    for (const key in jsonArray) {
+      let DoB = moment(jsonArray[key]['Date of birth'], 'DD/MM/YYYY')
+      let otherName
+      if (!jsonArray[key]['Other name(s)']) {
+        otherName = null
+      }
+      let group = jsonArray[key]['What is the name of your Bible Study or Care Cell group?'];
+      if (!group) {
+        group = "None";
+      }
+      if (group === "N/A" || group === 'n/a') {
+        group = "None"
+      }
+      let residence = jsonArray[key]['Residence'];
+      if (!residence) {
+        residence = "None"
+      }
+      let email = jsonArray[key]['Active email address']
+      if (!email) {
+        email = "None"
+      }
+      let phone = jsonArray[key]['Phone number']
+      if (!phone) {
+        phone = "None"
+      }
+      const formattedDate = DoB.toDate()
+      const data: IYouthMember = {
+        Firstname: jsonArray[key]['First name'],
+        Othername: jsonArray[key]['Other name(s)'],
+        Lastname: jsonArray[key]['Surname'],
+        Email: email,
+        Phonenumber: phone,
+        DoB: formattedDate as Date,
+        Gender: jsonArray[key]['Gender'],
+        Residence: residence,
+        BibleStudyCareCell: group,
+        EmergencyContactName: jsonArray[key]['Who should be called in case of an emergency? (Name)'],
+        EmergencyContact: jsonArray[key]['Contact of the person'],
+        EmergencyContactRelationship: jsonArray[key]["What is the person's relation to you?"],
+      };
+      MemberData.push(data)
+
+
+    }
+    importData(res, MemberData)
+
+    // fs.appendFile(
+    //   "src/json/Members.json", JSON.stringify(MemberData, null, 2),
+    //   (err) => {
+    //     if (err) {
+    //       res.status(400).send("Error writing file")
+    //     } else {
+    //       res.status(200).send(JSON.stringify(MemberData));
+    //     }
+    //   }
+    // )
+  }
+  catch (err) {
+    next(err)
+  }
+}
+
+export const importData = async (res: Response, data: IYouthMember[]) => {
+  try {
+    await MemberData.insertMany(data);
+    res.status(200).json({ success: true, message: "Data imported" });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error });
+  }
+};
