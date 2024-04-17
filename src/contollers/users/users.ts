@@ -27,14 +27,17 @@ export const addMember = async (
     }
     const {
       Firstname,
+        Othername,
       Lastname,
       Email,
       Phonenumber,
       DoB,
       Gender,
       Residence,
-      BibleStudyGroup,
-      CareCellName,
+      BibleStudyCareCell,
+        EmergencyContactName,
+        EmergencyContact,
+        EmergencyContactRelationship,
     } = req.body;
     console.log(req.body);
 
@@ -50,26 +53,32 @@ export const addMember = async (
         .status(400)
         .json({ success: false, message: "Member already exists" });
     }
-    let group = BibleStudyGroup;
-    let cell = CareCellName;
+    let group = BibleStudyCareCell;
 
-    if (!BibleStudyGroup) {
+    if (!BibleStudyCareCell) {
       group = "None";
     }
-    if (!CareCellName) {
-      cell = "None";
+    if (!EmergencyContactName || !EmergencyContact || !EmergencyContactRelationship) {
+        return res.status(400).json({
+            success: false,
+            message: "Emergency contact details are required",
+        });
     }
 
     const data: IYouthMember = {
       Firstname,
+        Othername,
       Lastname,
       Email,
       Phonenumber,
       DoB,
       Gender,
       Residence,
-      BibleStudyGroup: group,
-      CareCellName: cell,
+      BibleStudyCareCell: group,
+        EmergencyContactName,
+        EmergencyContact,
+        EmergencyContactRelationship,
+
     };
     const newMember = new MemberData(data);
     const saveMember = await newMember.save();
@@ -92,19 +101,22 @@ export const editMembers = async (
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.query;
-    console.log(req.query);
+    const id = req.params.id;
+    console.log(req.params.id);
     const {
       Firstname,
+        Othername,
       Lastname,
       Email,
       Phonenumber,
       DoB,
       Gender,
       Residence,
-      BibleStudyGroup,
-      CareCellName,
-    } = req.body;
+      BibleStudyCareCell,
+        EmergencyContactName,
+        EmergencyContact,
+        EmergencyContactRelationship,
+    }:IYouthMember = req.body;
 
     const member = await MemberData.findOne({ _id: id });
     if (!member) {
@@ -114,14 +126,17 @@ export const editMembers = async (
     }
     const update = {
       Firstname,
+        Othername,
       Lastname,
       Email,
       Phonenumber,
       DoB,
       Gender,
       Residence,
-      BibleStudyGroup,
-      CareCellName,
+      BibleStudyCareCell,
+        EmergencyContactName,
+        EmergencyContact,
+        EmergencyContactRelationship,
     };
 
     const updatedMember = await MemberData.findOneAndUpdate(
@@ -174,12 +189,14 @@ export const removeDuplicates = async (
       { allowDiskUse: true },
     ).exec();
     if (duplicates.length > 0) {
-      duplicates.forEach(async (doc) => {
+      duplicates.map(async (doc) => {
         await MemberData.deleteMany({ _id: { $in: doc.dups } });
         return res
           .status(200)
           .json({ success: true, message: "Duplicates removed" });
       });
+    }else{
+      return res.status(200).json({success:true, message:"No duplicates found"})
     }
 
   } catch (error) {
@@ -188,3 +205,16 @@ export const removeDuplicates = async (
     }
   }
 };
+
+export const uploadExcel = async (req:Request, res:Response, next:NextFunction) => {
+  try{
+    const file = req.file
+    if(!file){
+      return res.status(400).json({success:false, message:"No file uploaded"})
+    }
+
+
+  }catch (error) {
+    next(error)
+  }
+}
