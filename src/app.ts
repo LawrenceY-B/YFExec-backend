@@ -3,8 +3,13 @@ import { createServer } from "http";
 import "dotenv/config";
 import { DB_Connection } from "./database/db";
 import ErrorHandler from "./middlewares/ErrorHandler";
+import { initiateClient } from "./middlewares/redis";
 import AuthRoutes from "./routes/auth.routes";
 import UserRoutes from "./routes/user.routes";
+import { sendBirthdayWishes } from "./controllers/users/users";
+
+
+
 
 const port = process.env.PORT;
 const app = express();
@@ -33,5 +38,7 @@ app.use(ErrorHandler);
 
 const httpserver = server.listen(port, async () => {
   await DB_Connection();
+  await initiateClient()
+  sendBirthdayWishes()
   console.log(`server is running on port ${port}`);
 });

@@ -1,5 +1,7 @@
 import Joi from "joi";
 import { IYouthMember } from "../interfaces/youthMember";
+import { Response } from "express";
+import MemberData from "../models/member.model";
 
 export const validateYouthMember = (youthMember: IYouthMember) => {
   const schema = Joi.object({
@@ -19,4 +21,12 @@ export const validateYouthMember = (youthMember: IYouthMember) => {
     EmergencyContact: Joi.string().required(),
   });
   return schema.validate(youthMember);
+};
+export const importData = async (res: Response, data: IYouthMember[]) => {
+  try {
+    await MemberData.insertMany(data);
+    res.status(200).json({ success: true, message: "Data imported" });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error });
+  }
 };

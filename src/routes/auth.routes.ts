@@ -1,15 +1,7 @@
+
 import express, { Request, Response } from "express";
-import {
-  getALLUsers,
-  login,
-  register,
-  resetPassword,
-  signinwithEmail,
-  signinwithPhone,
-  verify,
-  verifyOTP,
-} from "../contollers/authentication/auth";
-import OTPData from "../models/otp.model";
+import { register } from "ts-node";
+import { resetPassword, signinwithPhone, signinwithEmail, login, getALLUsers, verifyOTP,verify } from "../controllers/authentication/auth";
 
 const AuthRoutes = express.Router();
 

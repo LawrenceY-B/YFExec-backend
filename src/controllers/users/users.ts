@@ -11,11 +11,12 @@
 import { Request, Response, NextFunction } from "express";
 import csv from "csvtojson"
 import moment from "moment";
-import { validateYouthMember } from "../../services/user.service";
+import { importData, validateYouthMember } from "../../services/user.service";
 import MemberData from "../../models/member.model";
 import { IYouthMember } from "../../interfaces/youthMember";
-import fs from "fs"
-
+import { writeData } from "../../middlewares/redis";
+import cron from "node-cron"
+import { forbidden } from "joi";
 export const addMember = async (
   req: Request,
   res: Response,
@@ -190,14 +191,17 @@ export const removeDuplicates = async (req: Request, res: Response, next: NextFu
     if (duplicate.length > 0) {
       duplicate.forEach(async (doc) => {
         await MemberData.deleteMany({ _id: { $in: doc.dups } });
-        return res
-          .status(200)
-          .json({ success: true, message: "Duplicate removed" });
+
       });
+      return res
+        .status(200)
+        .json({ success: true, message: "Duplicate removed" });
     }
     return res
       .status(200)
-      .json({ success: true, message: "No duplicate found" });
+      .json({ success: true, message: "No duplicate found", data: duplicate });
+
+
 
   } catch (error) {
     next(error)
@@ -274,11 +278,76 @@ export const uploadExcel = async (req: Request, res: Response, next: NextFunctio
   }
 }
 
-export const importData = async (res: Response, data: IYouthMember[]) => {
+export const getMemberByFirstName = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await MemberData.insertMany(data);
-    res.status(200).json({ success: true, message: "Data imported" });
+    const { firstname } = req.params
+    if (!firstname) {
+      return res.status(400).json({ success: false, message: "No search parameter" })
+    }
+    const member = await MemberData.find({ Firstname: firstname })
+    if (!member || member.length === 0) {
+      return res.status(400).json({ success: false, message: "No member found" })
+    }
+    writeData(firstname, JSON.stringify(member), {
+      EX: 300
+    })
+    return res.status(200).json({ success: true, data: member })
+
   } catch (error) {
-    res.status(400).json({ success: false, message: error });
+    next(error)
   }
-};
+}
+export const findAllMembers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const members = await MemberData.find({})
+    if (!members) {
+      return res.status(400).json({ success: false, message: "No member found" })
+    }
+    return res.status(200).json({ success: true, data: members })
+  } catch (error) {
+    next(error)
+  }
+}
+export const searchMembers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { data } = req.body
+    if (!data) {
+      return res.status(400).json({ success: false, message: "No search parameter" })
+    }
+    const text = new RegExp(data as string, "i");
+
+    const memberDetail = await MemberData.find({
+      $or: [{ Firstname: text }, { Lastname: text }, { Othername: text }]
+
+    })
+    if (!memberDetail) {
+      return res.status(400).json({ success: false, message: "No member found" })
+    }
+    return res.status(200).json({ success: true, data: memberDetail })
+  } catch (error) {
+    next(error)
+  }
+}
+export const sendBirthdayWishes = async () => {
+  try {
+    let myDay = '07/18/2001'; // Assuming July 18, 2001
+    let dy = moment(myDay).toDate(); // Convert dy to a string
+
+    const trial = await MemberData.aggregate([
+      { 
+        $match: {
+          $expr: {
+            $and: [
+              { $eq: [{ $dayOfMonth: '$DoB' }, { $dayOfMonth: dy}] },
+              { $eq: [{ $month: '$DoB' }, { $month: dy}] },
+            ],
+          },
+        }
+      }
+    ])
+    console.log(trial)
+  } catch (error) {
+    console.log(error);
+  }
+}
+
