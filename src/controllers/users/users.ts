@@ -15,8 +15,10 @@ import { importData, validateYouthMember } from "../../services/user.service";
 import MemberData from "../../models/member.model";
 import { IYouthMember } from "../../interfaces/youthMember";
 import { writeData } from "../../middlewares/redis";
-import cron from "node-cron"
-import { forbidden } from "joi";
+import cron from "node-cron";
+import { sendBirthdayMail } from "../../services/auth.service";
+
+
 export const addMember = async (
   req: Request,
   res: Response,
@@ -330,22 +332,31 @@ export const searchMembers = async (req: Request, res: Response, next: NextFunct
 }
 export const sendBirthdayWishes = async () => {
   try {
-    let myDay = '07/18/2001'; // Assuming July 18, 2001
-    let dy = moment(myDay).toDate(); // Convert dy to a string
-
-    const trial = await MemberData.aggregate([
-      { 
-        $match: {
-          $expr: {
-            $and: [
-              { $eq: [{ $dayOfMonth: '$DoB' }, { $dayOfMonth: dy}] },
-              { $eq: [{ $month: '$DoB' }, { $month: dy}] },
-            ],
+    cron.schedule("35 11 * * *", async () => {
+      const today = new Date();
+      const day = today.getDate();
+      const month = today.getMonth() + 1;
+      const birthdayMatch = await MemberData.aggregate([
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: [{ $dayOfMonth: '$DoB' }, day] },
+                { $eq: [{ $month: '$DoB' }, month] },
+              ],
+            },
           },
-        }
+        },
+      ]);
+      if (birthdayMatch.length > 0) {
+        birthdayMatch.forEach((member) => {
+          const name = `${member.Firstname}  ${member.Lastname}`;
+          sendBirthdayMail('lawrencekybj@gmail.com', name)
+        });
+      } else {
+        console.log("No birthdays today");
       }
-    ])
-    console.log(trial)
+    })
   } catch (error) {
     console.log(error);
   }

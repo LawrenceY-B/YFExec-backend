@@ -3,7 +3,8 @@ import { createServer } from "http";
 import "dotenv/config";
 import { DB_Connection } from "./database/db";
 import ErrorHandler from "./middlewares/ErrorHandler";
-import { initiateClient } from "./middlewares/redis";
+
+// import { initiateClient } from "./middlewares/redis";
 import AuthRoutes from "./routes/auth.routes";
 import UserRoutes from "./routes/user.routes";
 import { sendBirthdayWishes } from "./controllers/users/users";
@@ -38,7 +39,7 @@ app.use(ErrorHandler);
 
 const httpserver = server.listen(port, async () => {
   await DB_Connection();
-  await initiateClient()
+  // await initiateClient()
   sendBirthdayWishes()
   console.log(`server is running on port ${port}`);
 });
