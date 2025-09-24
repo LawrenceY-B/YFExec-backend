@@ -11,12 +11,14 @@
 import { Request, Response, NextFunction } from "express";
 import csv from "csvtojson"
 import moment from "moment";
-import { importData, validateYouthMember } from "../../services/user.service";
+import { convertXLSXtoCSV, generateExcelWithStats, importData, validateYouthMember } from "../../services/user.service";
 import MemberData from "../../models/member.model";
 import { IYouthMember } from "../../interfaces/youthMember";
 import { writeData } from "../../middlewares/redis";
 import cron from "node-cron";
 import { sendBirthdayMail } from "../../services/auth.service";
+import fs from "fs";
+import path from "path";
 
 
 export const addMember = async (
@@ -216,10 +218,28 @@ export const uploadExcel = async (req: Request, res: Response, next: NextFunctio
     if (!file) {
       return res.status(400).json({ success: false, message: "No file uploaded" })
     }
-    const jsonArray = await csv().fromString(file.buffer.toString())
+    const csvData = await convertXLSXtoCSV(file)
+    // // Create the directory if it doesn't exist
+    // const csvDir = path.join(__dirname, '../../csv');
+    // if (!fs.existsSync(csvDir)) {
+    //   fs.mkdirSync(csvDir, { recursive: true });
+    // }
+
+    // // Store csv data locally
+    // const csvFilePath = path.join(csvDir, 'members.csv');
+    // fs.appendFile(csvFilePath, csvData, (err) => {
+    //   if (err) {
+    //     console.error("Error writing file:", err);
+    //   } else {
+    //     console.log("File written successfully");
+    //   }
+    // });
+
+    const jsonArray = await csv().fromString(csvData)
     let MemberData: IYouthMember[] = []
     for (const key in jsonArray) {
-      let DoB = moment(jsonArray[key]['Date of birth'], 'DD/MM/YYYY')
+      let DoB = moment(jsonArray[key]['Date of birth'])
+      const formattedDate = DoB.isValid() ? DoB.format('YYYY-MM-DD') : jsonArray[key]['Date of birth'];
       let otherName
       if (!jsonArray[key]['Other name(s)']) {
         otherName = null
@@ -243,14 +263,14 @@ export const uploadExcel = async (req: Request, res: Response, next: NextFunctio
       if (!phone) {
         phone = "None"
       }
-      const formattedDate = DoB.toDate()
+
       const data: IYouthMember = {
         Firstname: jsonArray[key]['First name'],
         Othername: jsonArray[key]['Other name(s)'],
         Lastname: jsonArray[key]['Surname'],
         Email: email,
         Phonenumber: phone,
-        DoB: formattedDate as Date,
+        DoB: formattedDate as string,
         Gender: jsonArray[key]['Gender'],
         Residence: residence,
         BibleStudyCareCell: group,
@@ -259,8 +279,6 @@ export const uploadExcel = async (req: Request, res: Response, next: NextFunctio
         EmergencyContactRelationship: jsonArray[key]["What is the person's relation to you?"],
       };
       MemberData.push(data)
-
-
     }
     importData(res, MemberData)
 
@@ -301,7 +319,7 @@ export const getMemberByFirstName = async (req: Request, res: Response, next: Ne
 }
 export const findAllMembers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const members = await MemberData.find({})
+    const members = await MemberData.find({}).select('-__v -_id')
     if (!members) {
       return res.status(400).json({ success: false, message: "No member found" })
     }
@@ -359,6 +377,42 @@ export const sendBirthdayWishes = async () => {
     })
   } catch (error) {
     console.log(error);
+  }
+}
+export const downloadExcel = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const members = await MemberData.find({}).select('-__v -_id')
+    if (!members) {
+      return res.status(400).json({ success: false, message: "No member found" })
+    }
+    const memberData: IYouthMember[] = members.map(member => ({
+      Firstname: member.Firstname,
+      Othername: member.Othername,
+      Lastname: member.Lastname,
+      Email: member.Email,
+      Phonenumber: member.Phonenumber,
+      DoB: member.DoB,
+      Gender: member.Gender,
+      Residence: member.Residence,
+      BibleStudyCareCell: member.BibleStudyCareCell,
+      EmergencyContactName: member.EmergencyContactName,
+      EmergencyContactRelationship: member.EmergencyContactRelationship,
+      EmergencyContact: member.EmergencyContact,
+    }));
+
+    const buffer = generateExcelWithStats(memberData);
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=youth_members_with_stats.xlsx"
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.send(buffer);
+  } catch (error) {
+    next(error)
   }
 }
 

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer"
-import { addMember, editMembers, findAllMembers, getMemberByFirstName, removeDuplicates, searchMembers, uploadExcel } from "../controllers/users/users";
+import { addMember, downloadExcel, editMembers, findAllMembers, getMemberByFirstName, removeDuplicates, searchMembers, uploadExcel } from "../controllers/users/users";
 // import { checkCache } from "../middlewares/redis";
 
 const storage = multer.memoryStorage();
@@ -15,5 +15,6 @@ UserRoutes.get("/get-all", findAllMembers);
 // UserRoutes.get("/get/:firstname", checkCache ,getMemberByFirstName)
 UserRoutes.get("/get/:firstname", getMemberByFirstName)
 UserRoutes.get("/search",searchMembers)
+UserRoutes.get("/download-excel", downloadExcel);
 
 export default UserRoutes;
