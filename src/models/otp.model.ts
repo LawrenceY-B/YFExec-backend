@@ -6,7 +6,7 @@ const OTPSchema = new Schema(
     otp: { type: String, required: true },
     createdAt: { type: Date, expires: 300, default: Date.now },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const OTPData = model("otp", OTPSchema);

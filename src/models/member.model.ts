@@ -14,7 +14,6 @@ const members = new Schema<IYouthMember>({
   EmergencyContactName: { type: String, required: true },
   EmergencyContactRelationship: { type: String, required: true },
   EmergencyContact: { type: String, required: true },
-
 });
 
 const MemberData = model<IYouthMember>("members", members);

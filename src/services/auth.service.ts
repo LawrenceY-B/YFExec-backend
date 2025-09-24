@@ -1,10 +1,8 @@
 import Joi from "joi";
-import { IUser } from "../interfaces/IUser";
-import { Twilio } from "twilio";
 import nodemailer from "nodemailer";
-import hbs, {
-  NodemailerExpressHandlebarsOptions,
-} from "nodemailer-express-handlebars";
+import hbs, { NodemailerExpressHandlebarsOptions } from "nodemailer-express-handlebars";
+import { Twilio } from "twilio";
+import { IUser } from "../interfaces/IUser";
 
 export const generateOTP = (): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -38,12 +36,7 @@ export const sendSMS = async (phone: string, text: string) => {
     .catch((error) => console.error(error));
 };
 
-export const sendMail = async (
-  email: string,
-  token: string,
-  userid: string,
-  name: string,
-): Promise<void> => {
+export const sendMail = async (email: string, token: string, userid: string, name: string): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
       const user = process.env.EMAIL as string;
@@ -143,7 +136,7 @@ export const sendMailOTP = async (email: string, otp: string, name: string) => {
     }
   });
 };
-export const sendBirthdayMail = async (email:string, name:string) => {
+export const sendBirthdayMail = async (email: string, name: string) => {
   const user = process.env.EMAIL as string;
   const pass = process.env.PASSWORD as string;
   const transporter = nodemailer.createTransport({
@@ -187,7 +180,7 @@ export const sendBirthdayMail = async (email:string, name:string) => {
       console.info("Email sent:", info.response);
     }
   });
-}
+};
 
 export const generateToken = (): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -203,9 +196,7 @@ export const generateToken = (): Promise<string> => {
 export const ValidateSignUp = (person: IUser) => {
   const schema = Joi.object({
     name: Joi.string().min(3).max(30).required(),
-    phone: Joi.string()
-      .pattern(new RegExp("^(?:\\+233\\d{9}|0\\d{9})$"))
-      .required(),
+    phone: Joi.string().pattern(new RegExp("^(?:\\+233\\d{9}|0\\d{9})$")).required(),
     email: Joi.string().email().required(),
     role: Joi.string().valid("ADMIN", "WELFARE", "USER").required(),
   });

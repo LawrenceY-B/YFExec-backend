@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./build/app.js",
     "build": "tsc",
-    "dev": "nodemon src/app.ts"
+    "dev": "nodemon src/app.ts",
+    "seed:form": "ts-node --project tsconfig.json src/scripts/seedFormSchema.ts"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "@types/redis": "^4.0.11",
     "@types/uuid": "^9.0.7",
     "prettier": "3.2.5",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {

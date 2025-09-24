@@ -1,7 +1,14 @@
-
-import express, { Request, Response } from "express";
+import express from "express";
 import { register } from "ts-node";
-import { resetPassword, signinwithPhone, signinwithEmail, login, getALLUsers, verifyOTP,verify } from "../controllers/authentication/auth";
+import {
+  getALLUsers,
+  login,
+  resetPassword,
+  signinwithEmail,
+  signinwithPhone,
+  verify,
+  verifyOTP,
+} from "../controllers/authentication/auth";
 
 const AuthRoutes = express.Router();
 

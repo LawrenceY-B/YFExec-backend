@@ -18,11 +18,7 @@ declare module "express-serve-static-core" {
   }
 }
 
-export const verifyToken = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
   const Authorization = req.get("Authorization");
   if (!Authorization || !Authorization.startsWith("Bearer ")) {
     res.status(401).json({ message: "Invalid Authorization header" });

@@ -11,7 +11,7 @@ export interface IYouthMember {
   EmergencyContactName: string | null;
   EmergencyContactRelationship: string | null;
   EmergencyContact: string | null;
-};
+}
 // export interface CampParticipant {
 //   Timestamp: string;
 //   'First name': string;

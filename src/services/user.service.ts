@@ -1,8 +1,8 @@
-import Joi from "joi";
-import { IYouthMember } from "../interfaces/youthMember";
 import { Response } from "express";
-import MemberData from "../models/member.model";
+import Joi from "joi";
 import * as XLSX from "xlsx";
+import { IYouthMember } from "../interfaces/youthMember";
+import MemberData from "../models/member.model";
 
 export const validateYouthMember = (youthMember: IYouthMember) => {
   const schema = Joi.object({
@@ -10,9 +10,7 @@ export const validateYouthMember = (youthMember: IYouthMember) => {
     Othername: Joi.string().allow(null),
     Lastname: Joi.string().required(),
     Email: Joi.string().email().required(),
-    Phonenumber: Joi.string()
-      .pattern(new RegExp("^(?:\\+233\\d{9}|0\\d{9})$"))
-      .required(),
+    Phonenumber: Joi.string().pattern(new RegExp("^(?:\\+233\\d{9}|0\\d{9})$")).required(),
     DoB: Joi.date().required(),
     Gender: Joi.string().required(),
     Residence: Joi.string().required(),
@@ -52,7 +50,7 @@ export const convertXLSXtoCSV = async (file: Express.Multer.File) => {
   } catch (error) {
     throw new Error("Error converting XLSX to CSV");
   }
-}
+};
 
 const calcAge = (dob: string) => {
   const birthDate = new Date(dob);

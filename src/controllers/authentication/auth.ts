@@ -1,30 +1,24 @@
-import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { IUser } from "../../interfaces/IUser";
-import UserData from "../../models/user.model";
 import { v4 as uuidv4 } from "uuid";
+import { IUser } from "../../interfaces/IUser";
+import OTPData from "../../models/otp.model";
+import UserData from "../../models/user.model";
 import {
   ValidateSignUp,
   generateOTP,
-  sendSMS,
-  sendMail,
   generateToken,
+  sendMail,
   sendMailOTP,
+  sendSMS,
 } from "../../services/auth.service";
-import OTPData from "../../models/otp.model";
 
-export const register = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { error } = ValidateSignUp(req.body);
     if (error) {
-      res
-        .status(400)
-        .json({ success: false, message: error.details[0].message });
+      res.status(400).json({ success: false, message: error.details[0].message });
     }
     const { name, email, phone, role } = req.body;
     let phonenumber = phone as string;
@@ -34,10 +28,7 @@ export const register = async (
     const u = await UserData.find({
       $or: [{ phone: phonenumber }, { email: email }],
     });
-    if (u.length >= 1)
-      return res
-        .status(403)
-        .json({ success: false, message: "Phone already in use" });
+    if (u.length >= 1) return res.status(403).json({ success: false, message: "Phone already in use" });
     const key = await generateToken();
     let token = key;
     const user: IUser = {
@@ -54,8 +45,7 @@ export const register = async (
     const newUser = new UserData(user);
     let userid = newUser.user_id;
     const saveUser = await newUser.save();
-    if (!saveUser)
-      res.status(400).json({ success: false, message: "user not saved" });
+    if (!saveUser) res.status(400).json({ success: false, message: "user not saved" });
 
     // const text = `Your verification code is ${otp}.\n\nThis password will expire in 5 minutes.\n\n`;
     // sendSMS(phonenumber, text);
@@ -65,25 +55,14 @@ export const register = async (
     next(error);
   }
 };
-export const verify = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const verify = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { token, userid } = req.query;
-    if (!token || !userid)
-      return res.status(400).json({ success: false, message: "invalid token" });
+    if (!token || !userid) return res.status(400).json({ success: false, message: "invalid token" });
 
     const user = await UserData.findOne({ user_id: userid });
-    if (!user)
-      return res
-        .status(400)
-        .json({ success: false, message: "User Does Not Exist" });
-    if (user.isVerified)
-      return res
-        .status(400)
-        .json({ success: true, message: "User Already Verified" });
+    if (!user) return res.status(400).json({ success: false, message: "User Does Not Exist" });
+    if (user.isVerified) return res.status(400).json({ success: true, message: "User Already Verified" });
     let update = {
       isVerified: true,
       verificationToken: null,
@@ -95,51 +74,30 @@ export const verify = async (
         verificationToken: token,
       },
       update,
-      { new: true },
+      { new: true }
     );
-    if (!verification)
-      return res
-        .status(400)
-        .json({ success: false, message: "Something went wrong" });
+    if (!verification) return res.status(400).json({ success: false, message: "Something went wrong" });
     const data = {
       email: verification.email,
       user_id: verification.user_id,
       isVerified: verification.isVerified,
     };
 
-    res
-      .status(200)
-      .json({ success: true, message: "user verified", data: data });
+    res.status(200).json({ success: true, message: "user verified", data: data });
   } catch (error) {
     next(error);
   }
 };
 
-export const login = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
 
     const user = await UserData.findOne({ email: email });
-    if (!user)
-      return res
-        .status(400)
-        .json({ success: false, message: "User does not exist" });
-    const validPassword = await bcrypt.compare(
-      password,
-      user.password as string,
-    );
-    if (!validPassword)
-      return res
-        .status(400)
-        .json({ success: false, message: "Wrong Password" });
-    if (!user.isVerified)
-      return res
-        .status(400)
-        .json({ success: false, message: "User not verified" });
+    if (!user) return res.status(400).json({ success: false, message: "User does not exist" });
+    const validPassword = await bcrypt.compare(password, user.password as string);
+    if (!validPassword) return res.status(400).json({ success: false, message: "Wrong Password" });
+    if (!user.isVerified) return res.status(400).json({ success: false, message: "User not verified" });
 
     const secret = process.env.JWTSECRETKEY as string;
     const token = jwt.sign(
@@ -152,28 +110,19 @@ export const login = async (
         role: user.role,
       },
       `${secret}`,
-      { expiresIn: "12h", algorithm: "HS512" },
+      { expiresIn: "12h", algorithm: "HS512" }
     );
 
-    res
-      .status(200)
-      .json({ success: true, message: "user logged in", data: token });
+    res.status(200).json({ success: true, message: "user logged in", data: token });
   } catch (error) {
     next(error);
   }
 };
 
-export const resetPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userid, password } = req.body;
-    if (!userid || !password)
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing details ‼️" });
+    if (!userid || !password) return res.status(400).json({ success: false, message: "Missing details ‼️" });
     const hashedPassword = await bcrypt.hash(password, 12);
     const update = {
       password: hashedPassword,
@@ -181,23 +130,14 @@ export const resetPassword = async (
     const reset = await UserData.findOneAndUpdate({ user_id: userid }, update, {
       new: true,
     });
-    if (!reset)
-      return res
-        .status(400)
-        .json({ success: false, message: "Something went wrong" });
+    if (!reset) return res.status(400).json({ success: false, message: "Something went wrong" });
     console.log(reset);
-    res
-      .status(200)
-      .json({ success: true, message: "Password Reset Successful" });
+    res.status(200).json({ success: true, message: "Password Reset Successful" });
   } catch (error) {
     next(error);
   }
 };
-export const signinwithPhone = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const signinwithPhone = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { phone } = req.body;
     let phonenumber = phone as string;
@@ -205,10 +145,7 @@ export const signinwithPhone = async (
       phonenumber = phonenumber.replace("0", "+233");
     }
     const user = await UserData.findOne({ phone: phonenumber });
-    if (!user)
-      return res
-        .status(400)
-        .json({ success: false, message: "Phone number does not exist" });
+    if (!user) return res.status(400).json({ success: false, message: "Phone number does not exist" });
 
     const otp = await generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 12);
@@ -218,8 +155,7 @@ export const signinwithPhone = async (
       otp: hashedOTP,
     });
     const saveOTP = await newOTP.save();
-    if (!saveOTP)
-      res.status(400).json({ success: false, message: "OTP not saved" });
+    if (!saveOTP) res.status(400).json({ success: false, message: "OTP not saved" });
 
     const text = `Your verification code is ${otp}.\n\nThis password will expire in 5 minutes.\n\n`;
     await sendSMS(phonenumber, text);
@@ -228,19 +164,12 @@ export const signinwithPhone = async (
     next(error);
   }
 };
-export const signinwithEmail = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const signinwithEmail = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email } = req.body;
 
     const user = await UserData.findOne({ email: email });
-    if (!user)
-      return res
-        .status(400)
-        .json({ success: false, message: "Phone number does not exist" });
+    if (!user) return res.status(400).json({ success: false, message: "Phone number does not exist" });
 
     const otp = await generateOTP();
     const hashedOTP = await bcrypt.hash(otp, 12);
@@ -250,8 +179,7 @@ export const signinwithEmail = async (
       otp: hashedOTP,
     });
     const saveOTP = await newOTP.save();
-    if (!saveOTP)
-      res.status(400).json({ success: false, message: "OTP not saved" });
+    if (!saveOTP) res.status(400).json({ success: false, message: "OTP not saved" });
     sendMailOTP(email, otp, user.name);
     res.status(200).json({ success: true, message: "OTP sent" });
   } catch (error) {
@@ -259,53 +187,30 @@ export const signinwithEmail = async (
   }
 };
 
-export const getALLUsers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const getALLUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await UserData.find().select("name email phone user_id");
-    if (!users)
-      return res
-        .status(400)
-        .json({ success: false, message: "Something went wrong" });
-    res
-      .status(200)
-      .json({ success: true, message: "users found", data: users });
+    if (!users) return res.status(400).json({ success: false, message: "Something went wrong" });
+    res.status(200).json({ success: true, message: "users found", data: users });
   } catch (error) {
     next(error);
   }
 };
 
-export const verifyOTP = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const verifyOTP = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const secret = process.env.JWT_SECRET as string;
     const { userid, otp } = req.body;
-    if (!userid || !otp)
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing details ‼️" });
+    if (!userid || !otp) return res.status(400).json({ success: false, message: "Missing details ‼️" });
     const findOTP = await OTPData.findOne({ user_id: userid });
-    if (!findOTP)
-      return res.status(400).json({ success: false, message: "OTP Expired" });
+    if (!findOTP) return res.status(400).json({ success: false, message: "OTP Expired" });
     const validOTP = await bcrypt.compare(otp, findOTP.otp);
-    if (!validOTP)
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    if (!validOTP) return res.status(400).json({ success: false, message: "Invalid OTP" });
     const user = await UserData.findOne({ user_id: userid });
-    if (!user)
-      return res
-        .status(400)
-        .json({ success: false, message: "User Does Not Exist" });
+    if (!user) return res.status(400).json({ success: false, message: "User Does Not Exist" });
     const clearOTP = await OTPData.findOneAndDelete({ user_id: userid });
     if (!clearOTP) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Something went wrong" });
+      return res.status(400).json({ success: false, message: "Something went wrong" });
     }
     const token = jwt.sign(
       {
@@ -315,12 +220,10 @@ export const verifyOTP = async (
         role: user.role,
       },
       `${secret}`,
-      { expiresIn: "12h", algorithm: "HS512" },
+      { expiresIn: "12h", algorithm: "HS512" }
     );
 
-    return res
-      .status(200)
-      .json({ success: true, message: "OTP Verified", token: token });
+    return res.status(200).json({ success: true, message: "OTP Verified", token: token });
   } catch (error) {
     next(error);
   }

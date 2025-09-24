@@ -1,16 +1,14 @@
-import express, { Response, Request, NextFunction } from "express";
-import { createServer } from "http";
 import "dotenv/config";
+import express, { NextFunction, Request, Response } from "express";
+import { createServer } from "http";
 import { DB_Connection } from "./database/db";
 import ErrorHandler from "./middlewares/ErrorHandler";
 
 // import { initiateClient } from "./middlewares/redis";
-import AuthRoutes from "./routes/auth.routes";
-import UserRoutes from "./routes/user.routes";
 import { sendBirthdayWishes } from "./controllers/users/users";
-
-
-
+import AuthRoutes from "./routes/auth.routes";
+import CampRoutes from "./routes/camp.routes";
+import UserRoutes from "./routes/user.routes";
 
 const port = process.env.PORT;
 const app = express();
@@ -22,13 +20,11 @@ app
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "GET");
     res.setHeader("Content-Type", "application/json");
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
-    );
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     next();
   })
   .use("/api/members", UserRoutes)
+  .use("/api/camp", CampRoutes)
   .use("/api/v1/admin/auth", AuthRoutes);
 
 app.all("*", (req, res) => {
@@ -40,6 +36,6 @@ app.use(ErrorHandler);
 const httpserver = server.listen(port, async () => {
   await DB_Connection();
   // await initiateClient()
-  sendBirthdayWishes()
+  sendBirthdayWishes();
   console.log(`server is running on port ${port}`);
 });

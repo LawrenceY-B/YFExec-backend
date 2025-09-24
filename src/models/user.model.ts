@@ -12,7 +12,7 @@ const UserSchema = new Schema<IUser>(
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, required: true },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 const UserData = model<IUser>("users", UserSchema);
