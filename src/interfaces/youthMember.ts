@@ -12,35 +12,3 @@ export interface IYouthMember {
   EmergencyContactRelationship: string | null;
   EmergencyContact: string | null;
 }
-// export interface CampParticipant {
-//   Timestamp: string;
-//   'First name': string;
-//   Surname: string;
-//   'Other name(s)': string;
-//   Gender: string;
-//   Age: string;
-//   'Phone number': string;
-//   'WhatsApp number': string;
-//   'Date of birth': string;
-//   'Active email address': string;
-//   'Would this be your first time attending LIC camp?': string;
-//   'On what days will you be available to participate at Camp?': string;
-//   'Do you have any condition(s) that require monitoring and medication?': string;
-//   'If yes, kindly state the condition.': string;
-//   'Any allergies?': string;
-//   'If yes, kindly state allergy.': string;
-//   'Who should be called in case of an emergency? (Name)': string;
-//   "What is the person's relation to you?": string;
-//   'Contact of the person': string;
-//   'What is your expectation for Camp 2024?': string;
-//   'What is your home church': string;
-//   Occupation: string;
-//   'Place of occupation': string;
-//   Residence: string;
-//   'What is the name of your Bible Study or Care Cell group?': string;
-//   'Are you a regularized (Full) member of LIC?': string;
-//   'I hereby declare that I will abide by the rules and regulations governing the camp and shall be willing to help in every way possible to make camp 2024 a success.': string;
-//   'Any comments or concerns?\n(Eg': { ' transportation, requisition)': string;
-//   'Do you require support in paying for camp?': string;
-//   'If yes, how much?"': string;
-// };
