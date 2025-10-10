@@ -24,12 +24,12 @@ async function seed() {
             { id: "firstName", label: "First Name", type: "text", required: true },
             { id: "surname", label: "Surname", type: "text", required: true },
             { id: "otherNames", label: "Other Name(s)", type: "text" },
-            { id: "gender", label: "Gender", type: "radio", options: ["Male", "Female"] },
-            { id: "dob", label: "Date of Birth", type: "date" },
-            { id: "age", label: "Age", type: "number" },
+            { id: "gender", label: "Gender", type: "radio", options: ["Male", "Female"], required: true },
+            { id: "dob", label: "Date of Birth", type: "date", required: true },
+            { id: "age", label: "Age", type: "number", required: true },
             { id: "phoneNumber", label: "Phone Number", type: "tel", required: true },
             { id: "whatsappNumber", label: "WhatsApp Number", type: "tel" },
-            { id: "email", label: "Active Email Address", type: "email" },
+            { id: "email", label: "Active Email Address", type: "email", required: true },
           ],
         },
         {
@@ -42,6 +42,7 @@ async function seed() {
               label: "Would this be your first time attending LIC camp?",
               type: "radio",
               options: ["Yes", "No"],
+              required: true,
             },
             {
               id: "availability",
@@ -50,6 +51,7 @@ async function seed() {
                 "Buses will be available at LIC to convey campers to the Camp site only on Thursday, 1st January, 2026 and return to LIC on Sunday, 4th January, 2026.",
               type: "multiselect",
               options: ["All the days", "1st January, 2026", "2nd January, 2026", "3rd January, 2026"],
+              required: true,
             },
             {
               id: "conditions",
@@ -57,6 +59,7 @@ async function seed() {
               description: "(E.g.; asthma, high blood pressure, diabetes, etc.)",
               type: "radio",
               options: ["Yes", "No"],
+              required: true,
             },
             { id: "conditionDetails", label: "If yes, kindly state the condition.", type: "text" },
             {
@@ -66,6 +69,7 @@ async function seed() {
                 "(E.g.; lactose intolerant, pineapple, gluten sensitivity, dust, reaction to chloroquine, etc.).",
               type: "radio",
               options: ["Yes", "No"],
+              required: true,
             },
             { id: "allergyDetails", label: "If yes, kindly state allergy.", type: "text" },
           ],
@@ -76,14 +80,15 @@ async function seed() {
           description:
             "For all attendees - In case of an emergency, we may need to reach out to someone on your behalf.",
           fields: [
-            { id: "emergencyName", label: "Who should be called in case of an emergency? (Name)", type: "text" },
+            { id: "emergencyName", label: "Who should be called in case of an emergency? (Name)", type: "text", required: true },
             {
               id: "emergencyRelation",
               label: "What is their relation to you?",
               description: "E.g.; Parent, Guardian, Sibling, etc.",
               type: "text",
+              required: true,
             },
-            { id: "emergencyContact", label: "Contact Number", type: "tel" },
+            { id: "emergencyContact", label: "Contact Number", type: "tel", required: true },
           ],
         },
         {
@@ -115,6 +120,7 @@ async function seed() {
               label: "Occupation",
               description: "Eg. Student, Worker (state your role/designation) etc.",
               type: "text",
+              
             },
             {
               id: "workplace",
@@ -152,6 +158,7 @@ async function seed() {
                 "I hereby declare that I will abide by the rules and regulations governing the camp and shall be willing to help in every way possible to make camp 2026 a success.",
               type: "checkbox",
               options: ["Yes, I do"],
+              required: true,
             },
             {
               id: "comments",
@@ -163,6 +170,7 @@ async function seed() {
               label: "Do you require support in paying for camp?",
               type: "radio",
               options: ["Yes", "No"],
+              required: true,
             },
             { id: "supportAmount", label: "If yes, how much?", type: "number" },
             {

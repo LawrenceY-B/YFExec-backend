@@ -3,6 +3,8 @@ import express, { NextFunction, Request, Response } from "express";
 import { createServer } from "http";
 import { DB_Connection } from "./database/db";
 import ErrorHandler from "./middlewares/ErrorHandler";
+import cors from "cors";
+
 
 // import { initiateClient } from "./middlewares/redis";
 import { sendBirthdayWishes } from "./controllers/users/users";
@@ -15,14 +17,12 @@ const app = express();
 const server = createServer(app);
 app.use(express.json());
 
+app.use(cors({
+  origin: "*", // In production, specify your frontend domain
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app
-  .use((req: Request, res: Response, next: NextFunction) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET");
-    res.setHeader("Content-Type", "application/json");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    next();
-  })
   .use("/api/members", UserRoutes)
   .use("/api/camp", CampRoutes)
   .use("/api/v1/admin/auth", AuthRoutes);

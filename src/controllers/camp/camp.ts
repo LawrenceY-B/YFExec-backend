@@ -3,10 +3,8 @@ import { ResponseCode } from "../../global/enums/response";
 import { ICampFormPayload } from "../../interfaces/camp";
 import { CampAttendeesData, campFormData } from "../../models/camp.model";
 import { validateCampFormSubmission, validateCampYearAndType } from "../../services/camp.service";
-/**
- * @todo return frontend form structure from db
- * @todo save form structure to db
- */
+import { sendSMS } from "../../services/auth.service";
+
 
 export const getFormSchema = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -88,7 +86,24 @@ export const submitCampForm = async (req: Request, res: Response, next: NextFunc
         .status(500)
         .json({ success: false, responseCode: ResponseCode.BAD_REQUEST, message: "Failed to save form submission" });
 
-    res.status(201).json({ success: true, message: "Form submitted successfully", data: savedSubmission });
+    const isBelow18 = (() => {
+      const age = details.age;
+      if (age !== undefined) {
+        return age < 18;
+      }
+      return false;
+    })
+    const message = isBelow18() ?
+      `Dear ${details.firstName}, your registration for Youth Camp ${year} has been received. As you are below 18 years, we will need a consent form signed by your parent/guardian before you can attend the camp. We will contact you with further details.
+      Kindly use this link to download the prospectus, rules and regulations, and consent form: http://bit.ly/48Xgpzk`
+      : `Dear ${details.firstName}, your registration for Youth Camp ${year} has been received. We will contact you with further details.
+      Kindly use this link to download the prospectus and rules and regulations: http://bit.ly/48Xgpzk`;
+    await sendSMS(
+      details.phoneNumber,
+      message
+    );
+
+    res.status(201).json({ success: true, message: "Form submitted successfully", data: savedSubmission, responseCode: ResponseCode.SUCCESS });
   } catch (error) {
     next(error);
   }
