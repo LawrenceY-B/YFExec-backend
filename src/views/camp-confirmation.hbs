@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Camp Registration</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        text-align: center;
+        background-image: url("https://lawrencestrialbucket.s3.amazonaws.com/banner.png");
+        background-size: cover;
+        background-position: center;
+        height: 82px;
+      }
+      .header h2 {
+        color: #fff;
+        margin: 0px;
+      }
+      .notice {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .link {
+        color: #007bff;
+      }
+      .footer {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header"></div>
+
+    <p>Dear {{firstName}},</p>
+
+    <p>Your registration for Youth Camp {{year}} has been received.</p>
+
+    {{#if isMinor}}
+    <div class="notice">
+      <strong>Important:</strong> As you are below 18 years, we will need a consent form signed by your parent/guardian
+      before you can attend the camp.
+    </div>
+    {{/if}}
+
+    <p>We will contact you with further details.</p>
+
+    <p>
+      Kindly use this link to download the {{#if isMinor}} prospectus, rules and regulations, and consent form: {{else}}
+      prospectus and rules and regulations: {{/if}}
+      <a href="http://bit.ly/48Xgpzk" class="link">http://bit.ly/48Xgpzk</a>
+    </p>
+
+    <p>Best regards,<br />Youth Fellowship Executives</p>
+
+    <div class="footer">Youth Camp {{year}} Registration Confirmation</div>
+  </body>
+</html>

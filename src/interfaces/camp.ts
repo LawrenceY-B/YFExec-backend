@@ -44,11 +44,11 @@ export interface ICampAttendeeDetails {
   surname: string;
   otherNames?: string;
   gender: "Male" | "Female";
-  age?: number;
+  age: number;
   phoneNumber: string;
   whatsappNumber?: string;
   dob: string;
-  email?: string;
+  email: string;
   firstTime: "Yes" | "No";
   availability: string[];
   conditions: "Yes" | "No";

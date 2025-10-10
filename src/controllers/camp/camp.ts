@@ -3,7 +3,8 @@ import { ResponseCode } from "../../global/enums/response";
 import { ICampFormPayload } from "../../interfaces/camp";
 import { CampAttendeesData, campFormData } from "../../models/camp.model";
 import { validateCampFormSubmission, validateCampYearAndType } from "../../services/camp.service";
-import { sendSMS } from "../../services/auth.service";
+import { sendBirthdayMail, sendMail, sendSMS } from "../../services/auth.service";
+import { sendCampRegistrationConfirmation } from "../../utils/email.util";
 
 
 export const getFormSchema = async (req: Request, res: Response, next: NextFunction) => {
@@ -98,10 +99,23 @@ export const submitCampForm = async (req: Request, res: Response, next: NextFunc
       Kindly use this link to download the prospectus, rules and regulations, and consent form: http://bit.ly/48Xgpzk`
       : `Dear ${details.firstName}, your registration for Youth Camp ${year} has been received. We will contact you with further details.
       Kindly use this link to download the prospectus and rules and regulations: http://bit.ly/48Xgpzk`;
-    await sendSMS(
+    const sms = await sendSMS(
       details.phoneNumber,
       message
     );
+    if (!sms.success) {
+      console.error("Failed to send SMS to", details.phoneNumber);
+      console.error("Fallback: Sending confirmation email instead.");
+      const emailSent = await sendCampRegistrationConfirmation(
+        details.email,
+        details.firstName,
+        year,
+        isBelow18()
+      );
+      if (!emailSent) {
+        console.error("Failed to send confirmation email to", details.email);
+      }
+    }
 
     res.status(201).json({ success: true, message: "Form submitted successfully", data: savedSubmission, responseCode: ResponseCode.SUCCESS });
   } catch (error) {
